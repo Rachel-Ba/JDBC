@@ -9,56 +9,60 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import fr.diginamic.jdbc.entites.Fournisseur;
+import fr.diginamic.jdbc.entites.Article;
 import fr.diginamic.jdbc.exception.ComptaException;
 
-public class FournisseurDaoJdbc implements FournisseurDao 
+public class ArticleDaoJdbc implements ArticleDao 
 {
 	public static void main(String[] a)
 	{
-		FournisseurDaoJdbc ofo = new FournisseurDaoJdbc();
-		List<Fournisseur> listeFournisseur = ofo.extraire();
-		for(Fournisseur fo : listeFournisseur)
+		ArticleDaoJdbc ofo = new ArticleDaoJdbc();
+		List<Article> listeArticle = ofo.extraire();
+		for(Article ar : listeArticle)
 		{
-			System.out.println(fo);
+			System.out.println(ar);
 		}
 		
 		//////////////INSERT///////////////////////////////////////
-		ofo.insert(new Fournisseur(9, "Lesieurs"));
-		listeFournisseur = ofo.extraire();
-		for(Fournisseur fo : listeFournisseur)
+		ofo.insert(new Article(14 , "Z01", "TEST T1", 666.66, 1));
+		listeArticle = ofo.extraire();
+		for(Article ar : listeArticle)
 		{
-			System.out.println(fo);
+			System.out.println(ar);
 		}
+	
 		//////////////UPDATE///////////////////////////////////////
-		ofo.update("Lesieurs","Leclerc");
-		listeFournisseur = ofo.extraire();
-		for(Fournisseur fo : listeFournisseur)
+		ofo.update("Z01","Z66");
+		listeArticle = ofo.extraire();
+		for(Article ar : listeArticle)
 		{
-			System.out.println(fo);
+			System.out.println(ar);
 		}
+	
 		//////////////DELETE//////////////////////////////////////
-		if(ofo.delete(new Fournisseur(9, "Leclerc")) )System.out.println("Fournisseur Supprimé !");
-		listeFournisseur = ofo.extraire();
-		for(Fournisseur fo : listeFournisseur)
+		if(ofo.delete(new Article(14 , "Z66", "TEST T1", 666.66, 1)) )System.out.println("Article Supprimé !");
+		listeArticle = ofo.extraire();
+		for(Article ar : listeArticle)
 		{
-			System.out.println(fo);
+			System.out.println(ar);
 		}
 	}
 
-	public List<Fournisseur> extraire() 
+	public List<Article> extraire() 
 	{
 
 		Connection connection = null;
-		List<Fournisseur> listeFournisseurs = new ArrayList<>();
+		List<Article> listeArticles = new ArrayList<>();
 		try
 		{
 			connection = getConnection();
 			Statement monCanal = connection.createStatement();
-			ResultSet monResultat = monCanal.executeQuery("SELECT * FROM fournisseur;");
+			ResultSet monResultat = monCanal.executeQuery("SELECT * FROM article;");
 			while(monResultat.next())
 			{
-				listeFournisseurs.add(new Fournisseur(monResultat.getInt("id"), monResultat.getString("nom")));
+				listeArticles.add(new Article(monResultat.getInt("id"), monResultat.getString("ref"),
+						monResultat.getString("designation"), monResultat.getDouble("prix"),
+						monResultat.getInt("id_fou")));
 			}
 			monResultat.close();
 			monCanal.close();
@@ -79,11 +83,11 @@ public class FournisseurDaoJdbc implements FournisseurDao
 				System.err.println("Probl de connection close : " + e.getMessage());
 			}
 		}
-		return listeFournisseurs;
+		return listeArticles;
 	}
 
-	/**fait un insert dans la base de compta sur la table fournisseur*/
-	public void insert(Fournisseur fournisseur) 
+	/**fait un insert dans la base de compta sur la table Article*/
+	public void insert(Article Article) 
 	{
 		Connection connection = null;
 
@@ -91,12 +95,14 @@ public class FournisseurDaoJdbc implements FournisseurDao
 		{
 			connection = getConnection();
 			Statement monCanal = connection.createStatement();
-			int nb = monCanal.executeUpdate("insert into fournisseur (id,nom) values ("
-			+fournisseur.getId()+",'" + fournisseur.getNom()+"');");
+			int nb = monCanal.executeUpdate("INSERT INTO article (id,ref,designation,prix,id_fou) values ("
+			+Article.getId()+",'" + 
+					Article.getRef()+"','" +Article.getDesignation()+"'," +
+					Article.getPrix()+"," +Article.getId_fou()+");");
 			
 			if(nb==1)
 			{
-				System.out.println("Fournisseur ajouté !");
+				System.out.println("Article ajouté !");
 			}
 			monCanal.close();
 		} 
@@ -118,7 +124,7 @@ public class FournisseurDaoJdbc implements FournisseurDao
 	}
 
 	/**
-	 * fait un update dans la table fournisseur en changeant le nom ancienNom par nouveauNom
+	 * fait un update dans la table Article en changeant le nom ancienNom par nouveauNom
 	 */
 	public int update(String ancienNom, String nouveauNom) 
 	{
@@ -129,8 +135,8 @@ public class FournisseurDaoJdbc implements FournisseurDao
 		{
 			connection = getConnection();
 			Statement monCanal = connection.createStatement();
-			nb = monCanal.executeUpdate("UPDATE fournisseur SET nom='" + 
-			nouveauNom+"' WHERE nom = '"+ancienNom+"';");
+			nb = monCanal.executeUpdate("UPDATE Article SET ref ='" + 
+			nouveauNom+"' WHERE ref = '"+ancienNom+"';");
 			
 			monCanal.close();
 			
@@ -154,9 +160,9 @@ public class FournisseurDaoJdbc implements FournisseurDao
 	}
 
 	/**
-	 *supprime le fournisseur specifie dans la table fournisseur
+	 *supprime le Article specifie dans la table Article
 	 */
-	public boolean delete(Fournisseur fournisseur) 
+	public boolean delete(Article Article) 
 	{
 		Connection connection = null;
 		boolean nb = false;
@@ -166,7 +172,7 @@ public class FournisseurDaoJdbc implements FournisseurDao
 			connection = getConnection();
 			Statement monCanal = connection.createStatement();
 			nb = monCanal.executeUpdate(
-					"DELETE FROM fournisseur WHERE id="+ fournisseur.getId()+";")
+					"DELETE FROM Article WHERE id="+ Article.getId()+";")
 					==1;
 			monCanal.close();
 		} 
